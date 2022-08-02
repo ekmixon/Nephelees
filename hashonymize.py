@@ -8,27 +8,27 @@ class Logger:
 
     def debug(self, message):
         if self.verbosity == 2:
-            print("{}[DEBUG]{} {}".format(YELLOW, END, message))
+            print(f"{YELLOW}[DEBUG]{END} {message}")
 
     def verbose(self, message):
         if self.verbosity >= 1:
-            print("{}[VERBOSE]{} {}".format(BLUE, END, message))
+            print(f"{BLUE}[VERBOSE]{END} {message}")
 
     def info(self, message):
         if not self.quiet:
-            print("{}[*]{} {}".format(BOLD_BLUE, END, message))
+            print(f"{BOLD_BLUE}[*]{END} {message}")
 
     def success(self, message):
         if not self.quiet:
-            print("{}[+]{} {}".format(BOLD_GREEN, END, message))
+            print(f"{BOLD_GREEN}[+]{END} {message}")
 
     def warning(self, message):
         if not self.quiet:
-            print("{}[-]{} {}".format(BOLD_ORANGE, END, message))
+            print(f"{BOLD_ORANGE}[-]{END} {message}")
 
     def error(self, message):
         if not self.quiet:
-            print("{}[!]{} {}".format(BOLD_RED, END, message))
+            print(f"{BOLD_RED}[!]{END} {message}")
 
 
 def get_options():
@@ -65,55 +65,47 @@ def get_options():
         help="show no information at all",
     )
 
-    options = parser.parse_args()
-
-    return options
+    return parser.parse_args()
 
 
 def ntds_anonymize(file_path):
-    logger.info("Anonymizing ntds file {}".format(file_path))
+    logger.info(f"Anonymizing ntds file {file_path}")
     with open(file_path, "r") as clear_file:
-        with open(file_path + "_hashanon", "w") as anone_file:
-            increment = 0
-            for hash in clear_file.readlines():
+        with open(f"{file_path}_hashanon", "w") as anone_file:
+            for increment, hash in enumerate(clear_file):
                 username = hash.strip().split(":")[0]
                 new_hash = hash.split(":")[1:]
-                new_hash.insert(0, "user" + str(increment))
+                new_hash.insert(0, f"user{str(increment)}")
                 logger.debug(new_hash)
                 anone_file.write(":".join(new_hash))
-                increment += 1
-        logger.success("Done writing to file {}".format(file_path + "_hashanon"))
+        logger.success(f"Done writing to file {file_path}_hashanon")
 
 
 def asreproast_anonymize(file_path):
-    logger.info("Anonymizing ASREProast file {}".format(file_path))
+    logger.info(f"Anonymizing ASREProast file {file_path}")
     with open(file_path, "r") as clear_file:
-        with open(file_path + "_hashanon", "w") as anone_file:
-            increment = 0
-            for hash in clear_file.readlines():
+        with open(f"{file_path}_hashanon", "w") as anone_file:
+            for increment, hash in enumerate(clear_file):
                 new_hash = hash.split("$")[:3]
                 checksum = hash.split("$")[3].split(":")[1]
-                new_hash.append("user" + str(increment) + ":" + checksum)
+                new_hash.append(f"user{str(increment)}:{checksum}")
                 new_hash += hash.split("$")[4:]
                 logger.debug(new_hash)
                 anone_file.write("$".join(new_hash))
-                increment += 1
-        logger.success("Done writing to file {}".format(file_path + "_hashanon"))
+        logger.success(f"Done writing to file {file_path}_hashanon")
 
 
 def kerberoast_anonymize(file_path):
-    logger.info("Anonymizing Kerberoast file {}".format(file_path))
+    logger.info(f"Anonymizing Kerberoast file {file_path}")
     with open(file_path, "r") as clear_file:
-        with open(file_path + "_hashanon", "w") as anone_file:
-            increment = 0
-            for hash in clear_file.readlines():
+        with open(f"{file_path}_hashanon", "w") as anone_file:
+            for increment, hash in enumerate(clear_file):
                 new_hash = hash.split("$")[:3]
-                new_hash.append("*user" + str(increment) + "$domain$some/spn*")
+                new_hash.append(f"*user{str(increment)}$domain$some/spn*")
                 new_hash += hash.split("$")[6:]
                 logger.debug(new_hash)
                 anone_file.write("$".join(new_hash))
-                increment += 1
-        logger.success("Done writing to file {}".format(file_path + "_hashanon"))
+        logger.success(f"Done writing to file {file_path}_hashanon")
 
 
 def main():
